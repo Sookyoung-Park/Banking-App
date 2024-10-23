@@ -81,6 +81,10 @@ declare type Transaction = {
   receiverBankId: string;
 };
 
+declare type AnimatedCounterProps = {
+  amount: number;
+};
+
 declare type Bank = {
   $id: string;
   accountId: string;
