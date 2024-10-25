@@ -12,6 +12,7 @@ import { authFormSchema } from '@/lib/utils';
 import { Loader2 } from 'lucide-react'
 import SignUp from '@/app/(auth)/sign-up/page';
 import { useRouter } from 'next/navigation';
+import { signIn, signUp } from '@/lib/actions/user.actions';
 
 
 const AuthForm = ({ type }: { type: string }) => {
@@ -35,7 +36,7 @@ const AuthForm = ({ type }: { type: string }) => {
         setIsLoading(true)
         try{
             if(type === 'sign-in'){
-                // const response = await SignIn({
+                // const response = await signIn({
                 //     email: data.email,
                 //     password: data.password,
                 // })
@@ -45,7 +46,7 @@ const AuthForm = ({ type }: { type: string }) => {
             }
             // sign up with appwrite & create plaid token link
             if(type === 'sign-up'){
-                // const newUser = await SignUp(data)
+                // const newUser = await signUp(data)
                 // setUser(newUser)
             }
         }
