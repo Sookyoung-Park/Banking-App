@@ -5,16 +5,18 @@ import { ID } from 'node-appwrite'
 import { cookies } from "next/headers";
 import { parseStringify } from "../utils";
 
-export const signIn = async() => {
+export const signIn = async(userData:signInProps) => {
+    const { email, password } = userData
     try{
-        // Mutation / Database / Fetch
+        const { account } = await createAdminClient();
+        const response = await account.createEmailPasswordSession(email, password);
+        return parseStringify(response);
     }
     catch(error){
         console.log('Error in SignIn user.actions : ',error)
     }
 }
 
-// export const signUp = async (userData:SignUpParams) => {
 export const signUp = async (userData:SignUpParams) => {
     const {email, password, firstName, lastName} = userData
     try{
@@ -43,11 +45,14 @@ export const signUp = async (userData:SignUpParams) => {
     }
 }
 
-export async function getLoggedInUser() {
+export const getLoggedInUser = async () => {
     try {
         const { account } = await createSessionClient();
-        return await account.get();
+        const user = await account.get();
+        return parseStringify(user)
+        
     } catch (error) {
+        console.log(error)
         return null;
     }
 }

@@ -15,7 +15,7 @@ import CustomInput from './CustomInput';
 import { Loader2 } from 'lucide-react'
 
 import { authFormSchema } from '@/lib/utils';
-import { signUp } from '@/lib/actions/user.actions';
+import { signUp, getLoggedInUser, signIn } from '@/lib/actions/user.actions';
 
 
 
@@ -23,6 +23,7 @@ const AuthForm = ({ type }: { type: string }) => {
     const router = useRouter();
     const [user, setUser ] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    // const loggedInUser = await getLoggedInUser();
 
     const formSchema = authFormSchema(type)
 
@@ -40,13 +41,13 @@ const AuthForm = ({ type }: { type: string }) => {
         setIsLoading(true)
         try{
             if(type === 'sign-in'){
-                // const response = await signIn({
-                //     email: data.email,
-                //     password: data.password,
-                // })
-                // if(response){
-                //     router.push('/')
-                // }
+                const response = await signIn({
+                    email: data.email,
+                    password: data.password,
+                })
+                if(response){
+                    router.push('/')
+                }
             }
             // sign up with appwrite & create plaid token link
             if(type === 'sign-up'){
