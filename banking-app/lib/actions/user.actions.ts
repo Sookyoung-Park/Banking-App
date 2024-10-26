@@ -15,8 +15,7 @@ export const signIn = async() => {
 }
 
 // export const signUp = async (userData:SignUpParams) => {
-    export const signUp = async (userData:SignUpParams) => {
-    console.log('come here')
+export const signUp = async (userData:SignUpParams) => {
     const {email, password, firstName, lastName} = userData
     try{
         // Create a user account using appwrite - create from appwrite signup with email doc

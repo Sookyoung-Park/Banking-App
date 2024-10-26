@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation';
+
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import CustomInput from './CustomInput';
-import { authFormSchema } from '@/lib/utils';
 import { Loader2 } from 'lucide-react'
-import { useRouter } from 'next/navigation';
+
+import { authFormSchema } from '@/lib/utils';
 import { signUp } from '@/lib/actions/user.actions';
 
 
@@ -71,8 +74,9 @@ const AuthForm = ({ type }: { type: string }) => {
         finally{
             // whatever user fail or succeed, close the loader
             setIsLoading(false)
+            console.log(data)
         }
-        console.log(data)
+        
         
     }
 
@@ -81,7 +85,8 @@ const AuthForm = ({ type }: { type: string }) => {
             <header className='flex flex-col gap-5 md:gap-8'>
                 <Link 
                 href='/'
-                className='cursor-pointer items-center gap-1 flex'>
+                className='cursor-pointer items-center gap-1 flex'
+                >
                     <Image
                     src={"/icons/logo.svg"}
                     width={34}
@@ -94,14 +99,19 @@ const AuthForm = ({ type }: { type: string }) => {
                 <div className="flex flex-col gap-1 md:gap-3">
                     <h1 className='text-24 lg:text-36 font-semibold text-gray-900'>
                         {user ? 'Link Account' 
-                        : type === "sign-in" ? 'Sign In'
-                        : 'Sign Up'}
+                        : type === "sign-in" 
+                            ? 'Sign In'
+                            : 'Sign Up'
+                        }
+                        <p className='text-16 font-normal text-gray-600'>
+                            {user 
+                                ? 'Linke your account to get started'
+                                    : type === 'sign-in' 
+                                        ? 'Welcome back! Please enter your details'
+                                        : 'Please enter your details.'
+                            }
+                        </p>
                     </h1>
-                    <p className='text-16 font-normal text-gray-600'>
-                        {user ? 'Linke your account to get started'
-                        : type === 'sign-in' ? 'Welcome back! Please enter your details'
-                        : 'Please enter your details.'}
-                    </p>
                 </div>
             </header>
             {user ? (
@@ -134,16 +144,18 @@ const AuthForm = ({ type }: { type: string }) => {
 
                             <CustomInput control={form.control} name={"email"} label={"Email"} placeholder={"Enter your email"}/>
                             <CustomInput control={form.control} name={"password"} label={"Password"} placeholder={"Enter your password"}/>
+                            
                             <div className='flex flex-col gap-4'>
                                 <Button 
-                                type="submit"
-                                disabled= {isLoading}
-                                className='form-btn'>
+                                    type="submit"
+                                    disabled= {isLoading}
+                                    className='form-btn'
+                                >
                                     {isLoading ? (
                                         <>
                                             <Loader2
-                                            size={20}
-                                            className="animate-spin"
+                                                size={20}
+                                                className="animate-spin"
                                             /> &nbsp; Loading ...
                                         </>
                                     ): type === 'sign-in' ? 'Sign In' : 'Sign Up'
