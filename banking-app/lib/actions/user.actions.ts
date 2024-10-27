@@ -69,5 +69,8 @@ export const logoutAccount = async() => {
         console.log(error)
         return false
     }
+}
 
+export const createLinkToken = async() => {
+    
 }
