@@ -4,6 +4,8 @@ import {createSessionClient, createAdminClient} from "../appwrite";
 import { ID } from 'node-appwrite'
 import { cookies } from "next/headers";
 import { parseStringify } from "../utils";
+import { plaidClient } from "../plaid";
+import { CountryCode, Products } from "plaid";
 
 export const signIn = async(userData:signInProps) => {
     const { email, password } = userData
@@ -71,6 +73,22 @@ export const logoutAccount = async() => {
     }
 }
 
-export const createLinkToken = async() => {
-    
+export const createLinkToken = async(user: User) => {
+    try{
+        const tokenParams = {
+            user:{
+                client_user_id: user.$id
+            },
+            client_name: user.name,
+            products: ['auth'] as Products[],
+            language: 'en',
+            country_codes: ['US'] as CountryCode,
+        }
+        const response = await plaidClient.linkTokenCreate(tokenParams);
+
+    }
+    catch(error){
+        console.log('error in user.action createLinkToken: ', error)
+    }
+
 }
