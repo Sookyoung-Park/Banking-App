@@ -3,9 +3,10 @@
 import {createSessionClient, createAdminClient} from "../appwrite";
 import { ID } from 'node-appwrite'
 import { cookies } from "next/headers";
-import { parseStringify } from "../utils";
+import { encryptId, parseStringify } from "../utils";
 import { plaidClient } from "../plaid";
-import { CountryCode, Products } from "plaid";
+import { CountryCode, Products, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum } from "plaid";
+import { revalidatePath } from "next/cache";
 
 export const signIn = async(userData:signInProps) => {
     const { email, password } = userData
@@ -100,18 +101,56 @@ export const createLinkToken = async(user: User) => {
 // connecting payment processors so that user can trasfer funds in the first place
 export const exchangePublicToken = async({ publicToken, user}: exchangePublicTokenProps) => {
     try{
-        // create a link token 
-        // pass generated link token to Plaid Link
-        // Trigger flow of connecting bank account to application through Plaid Link
-        // On Success, Plaid link will rpvide temporary public token
-        //  exchange pulbic token twith permanent access token
-        // Exchange access token to get bank account information
-        // Processor
-            // Generate a processor toekn by exchanging access token and bank account id to securely exchange data btw Plaid and Processor
-            // Create a Funding Source using Dwolla
+        // exchange publicToken for access token and itme ID
+        const response = await plaidClient.itemPublicTokenExchange({ public_token: publicToken })
+        const accessToken = response.data.access_token
+        const itemId = response.data.item_id
 
+        // Get account information from Plaid using the access token
+        const accountResponse = await plaidClient.accountsGet({
+            access_token:accessToken
+        })
+        const accountData = accountResponse.data.accounts[0]
+
+        // generate processor token for dwolla(payment processor) using the access otken and account ID
+        const request: ProcessorTokenCreateRequest = {
+            access_token: accessToken,
+            account_id: accountData.account_id,
+            processor: 'dwolla' as ProcessorTokenCreateRequestProcessorEnum
+
+        }
+
+        // generate processor token
+        const processorTokenResponse = await plaidClient.processorTokenCreate(request)
+        const processorToken = processorTokenResponse.data.processor_token
+
+        // create Funding source url for the account using Dwolla customer ID, processor token and bank name
+        const FundingSourceUrl = await addFundingSource({
+            dwollaCustomerId: user.dwollaCustomerId,
+            processorToken,
+            bankName: accountData.name
+        })
+        if(!FundingSourceUrl){
+            throw Error;
+        }
+        // create a bank account using the userId, itemID, accountID, accessToken, fundingsourceUrl and sharable Id
+        await createBankAccount({
+            userId: user.$id,
+            bankId: itemId,
+            accountId: accountData.account_id,
+            accessToken,
+            FundingSourceUrl,
+            sharableId: encryptId(accountData.account_id) 
+        })
+        revalidatePath("/")
+
+        // return success msg
+        return parseStringify({
+            publicTokenExchange: 'Complete'
+        })
     }
-    catch{
+    catch(error){
+        console.log("Error in user.actions exchangePublicToken: ", error)
 
     }
 }
