@@ -8,6 +8,7 @@ import { plaidClient } from "../plaid";
 import { CountryCode, Products, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum } from "plaid";
 import { revalidatePath } from "next/cache";
 import { addFundingSource, createDwollaCustomer } from "./dwolla.actions";
+import { Query } from "node-appwrite";
 
 const{
     APPWRITE_DATABASE_ID: DATABASE_ID,
@@ -222,5 +223,36 @@ export const exchangePublicToken = async({ publicToken, user}: exchangePublicTok
     catch(error){
         console.log("Error in user.actions exchangePublicToken: ", error)
 
+    }
+}
+
+
+export const getBanks = async({ userId }: getBanksProps) => {
+    try{
+        const {database} = await createAdminClient()
+        const banks = await database.listDocuments(
+            DATABASE_ID!,
+            BANK_COLLECTION_ID!,
+            [Query.equal('userId', [userId])]
+        )
+        return parseStringify(banks.documents)
+    }
+    catch(error){
+        console.log('error in getBanks', error)
+    }
+}
+
+export const getBank = async({ documentId }: getBankProps) => {
+    try{
+        const {database} = await createAdminClient()
+        const bank = await database.listDocuments(
+            DATABASE_ID!,
+            BANK_COLLECTION_ID!,
+            [Query.equal(`$Id`, [documentId])]
+        )
+        return parseStringify(bank.documents[0])
+    }
+    catch(error){
+        console.log('error in getBank', error)
     }
 }
