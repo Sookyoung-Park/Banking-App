@@ -7,6 +7,13 @@ import { encryptId, parseStringify } from "../utils";
 import { plaidClient } from "../plaid";
 import { CountryCode, Products, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum } from "plaid";
 import { revalidatePath } from "next/cache";
+import { addFundingSource } from "./dwolla.actions";
+
+const{
+    APPWRITE_DATABASE_ID: DATABASE_ID,
+    APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
+    APPWRITE_BANK_COLLECTION_ID: BANK_COLLECTION_ID,
+} = process.env
 
 export const signIn = async(userData:signInProps) => {
     const { email, password } = userData
@@ -95,6 +102,31 @@ export const createLinkToken = async(user: User) => {
 
 }
 
+export const createBankAccount = async({userId, bankId, accountId, accessToken, fundingSourceUrl,sharableId}:createBankAccountProps) => {
+    try{
+        // create a new document
+        const { database } = await createAdminClient()
+        const bankAccount = await database.createDocument(
+            DATABASE_ID!,
+            BANK_COLLECTION_ID!,
+            ID.unique(),
+            {
+                userId,
+                bankId,
+                accountId,
+                accessToken,
+                fundingSourceUrl,
+                sharableId,
+            }
+        )
+        return parseStringify(bankAccount)
+
+    }
+    catch(error){
+        console.log("erro in user.actions createBankAccount: ", error)
+    }
+}
+
 // exchanges existing access token for tokens that allow to do banking stuffs
 // connect a bank account
 // making payment transfer between accounts
@@ -125,12 +157,12 @@ export const exchangePublicToken = async({ publicToken, user}: exchangePublicTok
         const processorToken = processorTokenResponse.data.processor_token
 
         // create Funding source url for the account using Dwolla customer ID, processor token and bank name
-        const FundingSourceUrl = await addFundingSource({
+        const fundingSourceUrl = await addFundingSource({
             dwollaCustomerId: user.dwollaCustomerId,
             processorToken,
             bankName: accountData.name
         })
-        if(!FundingSourceUrl){
+        if(!fundingSourceUrl){
             throw Error;
         }
         // create a bank account using the userId, itemID, accountID, accessToken, fundingsourceUrl and sharable Id
@@ -139,7 +171,7 @@ export const exchangePublicToken = async({ publicToken, user}: exchangePublicTok
             bankId: itemId,
             accountId: accountData.account_id,
             accessToken,
-            FundingSourceUrl,
+            fundingSourceUrl,
             sharableId: encryptId(accountData.account_id) 
         })
         revalidatePath("/")
