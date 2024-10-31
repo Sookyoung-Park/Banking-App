@@ -3,11 +3,11 @@
 import {createSessionClient, createAdminClient} from "../appwrite";
 import { ID } from 'node-appwrite'
 import { cookies } from "next/headers";
-import { encryptId, parseStringify } from "../utils";
+import { encryptId, extractCustomerIdFromUrl, parseStringify } from "../utils";
 import { plaidClient } from "../plaid";
 import { CountryCode, Products, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum } from "plaid";
 import { revalidatePath } from "next/cache";
-import { addFundingSource } from "./dwolla.actions";
+import { addFundingSource, createDwollaCustomer } from "./dwolla.actions";
 
 const{
     APPWRITE_DATABASE_ID: DATABASE_ID,
@@ -29,18 +29,46 @@ export const signIn = async(userData:signInProps) => {
 
 export const signUp = async (userData:SignUpParams) => {
     const {email, password, firstName, lastName} = userData
+    let newUserAccount
+
     try{
         // Create a user account using appwrite - create from appwrite signup with email doc
-        const { account } = await createAdminClient();
+        const { account, database } = await createAdminClient();
 
-        const newUserAccount = await account.create(
+        newUserAccount = await account.create(
             ID.unique(), 
             email, 
             password, 
             `${firstName} ${lastName}`
-            );
-        const session = await account.createEmailPasswordSession(email, password);
+        );
 
+        if(!newUserAccount){
+            throw new Error('Error in creating user')
+        }
+        
+        // create dwolla customer(payment processor) url 
+        const dwollaCustomerUrl = await createDwollaCustomer({
+            ...userData  ,
+            type:'personal'
+        })
+        if(!dwollaCustomerUrl){
+            throw new Error('Error in creating dwolla url in sign up')
+        }
+        const dowllaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl)
+        const newUser = await database.createDocument(
+            DATABASE_ID!,
+            USER_COLLECTION_ID!,
+            ID.unique(),
+            {
+                ...userData,
+                userId: newUserAccount.$id,
+                dowllaCustomerId,
+                dwollaCustomerUrl
+            }
+        )
+        
+
+        const session = await account.createEmailPasswordSession(email, password); 
 
         cookies().set("appwrite-session", session.secret, {
             path: "/",
@@ -48,7 +76,7 @@ export const signUp = async (userData:SignUpParams) => {
             sameSite: "strict",
             secure: true,
         });
-        return parseStringify(newUserAccount)
+        return parseStringify(newUser)
     }
     catch(error){
         console.log('Error in SignUp user.actions : ',error)
