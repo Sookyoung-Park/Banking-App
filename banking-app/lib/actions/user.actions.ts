@@ -27,8 +27,8 @@ export const signIn = async(userData:signInProps) => {
     }
 }
 
-export const signUp = async (userData:SignUpParams) => {
-    const {email, password, firstName, lastName} = userData
+export const signUp = async ({ password, ...userData}:SignUpParams ) => {
+    const {email, firstName, lastName} = userData
     let newUserAccount
 
     try{
@@ -48,13 +48,15 @@ export const signUp = async (userData:SignUpParams) => {
         
         // create dwolla customer(payment processor) url 
         const dwollaCustomerUrl = await createDwollaCustomer({
-            ...userData  ,
-            type:'personal'
+            ...userData,
+            type: 'personal'
         })
+
         if(!dwollaCustomerUrl){
             throw new Error('Error in creating dwolla url in sign up')
         }
-        const dowllaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl)
+        const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl)
+
         const newUser = await database.createDocument(
             DATABASE_ID!,
             USER_COLLECTION_ID!,
@@ -62,8 +64,8 @@ export const signUp = async (userData:SignUpParams) => {
             {
                 ...userData,
                 userId: newUserAccount.$id,
-                dowllaCustomerId,
-                dwollaCustomerUrl
+                dwollaCustomerId,  // corrected
+                dwollaCustomerUrl  // corrected
             }
         )
         
@@ -115,12 +117,14 @@ export const createLinkToken = async(user: User) => {
             user:{
                 client_user_id: user.$id
             },
-            client_name: user.name,
+            client_name: `${user.firstName} ${user.lastName}`,
             products: ['auth'] as Products[],
             language: 'en',
-            country_codes: ['US' as CountryCode],
+            country_codes: ['US'] as CountryCode[],
         }
+        // this line is the problem
         const response = await plaidClient.linkTokenCreate(tokenParams);
+
         return parseStringify({ linkToken: response.data.link_token })
 
     }
@@ -151,7 +155,7 @@ export const createBankAccount = async({userId, bankId, accountId, accessToken, 
 
     }
     catch(error){
-        console.log("erro in user.actions createBankAccount: ", error)
+        console.log("error in user.actions createBankAccount: ", error)
     }
 }
 
