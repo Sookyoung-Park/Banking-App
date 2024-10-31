@@ -92,7 +92,7 @@ export const getLoggedInUser = async () => {
         return parseStringify(user)
         
     } catch (error) {
-        console.log(error)
+        console.log('Error in getLoggedInUser')
         return null;
     }
 }
@@ -106,7 +106,7 @@ export const logoutAccount = async() => {
         return true
     }
     catch(error){
-        console.log(error)
+        console.log('Error in LogoutAccount',error)
         return false
     }
 }
@@ -121,7 +121,13 @@ export const createLinkToken = async(user: User) => {
             products: ['auth'] as Products[],
             language: 'en',
             country_codes: ['US'] as CountryCode[],
+            client_id: process.env.PLAID_CLIENT_ID,
+            secret: process.env.PLAID_SECRET,
+            // 'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
+            // 'PLAID-SECRET': process.env.PLAID_SECRET,
         }
+        console.log('here: ',tokenParams)
+
         // this line is the problem
         const response = await plaidClient.linkTokenCreate(tokenParams);
 

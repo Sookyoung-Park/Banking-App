@@ -72,7 +72,7 @@ const AuthForm = ({ type }: { type: string }) => {
             }
         }
         catch(error){
-            console.log(error)
+            console.log('Error in AuthForm')
         }
         finally{
             // whatever user fail or succeed, close the loader
