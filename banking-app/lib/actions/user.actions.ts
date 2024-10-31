@@ -93,3 +93,25 @@ export const createLinkToken = async(user: User) => {
     }
 
 }
+
+// exchanges existing access token for tokens that allow to do banking stuffs
+// connect a bank account
+// making payment transfer between accounts
+// connecting payment processors so that user can trasfer funds in the first place
+export const exchangePublicToken = async({ publicToken, user}: exchangePublicTokenProps) => {
+    try{
+        // create a link token 
+        // pass generated link token to Plaid Link
+        // Trigger flow of connecting bank account to application through Plaid Link
+        // On Success, Plaid link will rpvide temporary public token
+        //  exchange pulbic token twith permanent access token
+        // Exchange access token to get bank account information
+        // Processor
+            // Generate a processor toekn by exchanging access token and bank account id to securely exchange data btw Plaid and Processor
+            // Create a Funding Source using Dwolla
+
+    }
+    catch{
+
+    }
+}
