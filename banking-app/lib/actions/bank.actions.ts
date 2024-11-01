@@ -1,5 +1,6 @@
 "use server";
 
+import { consoleSandbox } from "@sentry/utils";
 import {
   ACHClass,
   CountryCode,
@@ -9,7 +10,7 @@ import {
   TransferType,
 } from "plaid";
 
-import { plaidClient } from "../plaid.config";
+import { plaidClient } from "../plaid";
 import { parseStringify } from "../utils";
 
 import { getTransactionsByBankId } from "./transaction.actions";
@@ -20,6 +21,7 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
     try {
         // get banks from db
         const banks = await getBanks({ userId });
+        console.log('banks: ', banks)
 
         const accounts = await Promise.all(
         banks?.map(async (bank: Bank) => {
@@ -47,7 +49,6 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
             appwriteItemId: bank.$id,
             sharableId: bank.sharableId,
             };
-
             return account;
         })
         );

@@ -9,7 +9,11 @@ import { getAccount, getAccounts } from '@/lib/actions/bank.actions'
 
 const Home = async ({searchParams:{id, page}}:SearchParamProps) => {
   const loggedIn = await getLoggedInUser()
-  const accounts = await getAccounts({userId:loggedIn.$id})
+
+  const accounts = await getAccounts({
+    userId:loggedIn.userId
+  })
+  // console.log('accounts', accounts)
 
   if(!accounts){
     return
@@ -17,6 +21,7 @@ const Home = async ({searchParams:{id, page}}:SearchParamProps) => {
 
   const accountsData = accounts?.data
   const appwriteItemId = (id as string) || accountsData[0]?.appwriteItemId
+  
   const account = await getAccount({appwriteItemId})
 
   return (
@@ -40,7 +45,7 @@ const Home = async ({searchParams:{id, page}}:SearchParamProps) => {
       </div>
       <RightSidebar
       user={loggedIn}
-      transactions={[accounts?.transactions]}
+      transactions={[account?.transactions]}
       banks={accountsData?.slice(0,2)}
       />
     </section>
