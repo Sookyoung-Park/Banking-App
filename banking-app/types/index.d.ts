@@ -152,6 +152,8 @@ declare interface BankInfoProps {
   account: Account;
   appwriteItemId?: string;
   type: "full" | "card";
+  name: string;
+  currBalance: number;
 }
 
 declare interface HeaderBoxProps {
