@@ -27,24 +27,10 @@ const RecentTransactions = ({
                 <TabsTrigger value="chaseBank">Chase Bank</TabsTrigger>
                 <TabsTrigger value="detuschBank">Deutsch Bank</TabsTrigger>
             </TabsList>
-                {/* {accounts.map((account:Account)=>( */}
-                    <TabsContent
-                    value={appwriteItemId}
-                    // key={account.id}
-                    className="space-y-4">
-                        <BankInfo 
-                            account={account}
-                            appwriteItemId={appwriteItemId}
-                            type="full"
-                            name="Bank of America"
-                            currBalance= {currBalanceBof}
-                        />
-                    </TabsContent>
-                {/* ))} */}
                 
-            {/* <TabsContent value="BankofAmerica">Make changes to your account here.</TabsContent>
+            <TabsContent value="BankofAmerica">Make changes to your account here.</TabsContent>
             <TabsContent value="chaseBank">Change your password here.</TabsContent>
-            <TabsContent value="detuschBank">Deutsch Bank Here</TabsContent> */}
+            <TabsContent value="detuschBank">Deutsch Bank Here</TabsContent> 
             
         </Tabs>
 
